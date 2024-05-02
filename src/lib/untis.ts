@@ -5,7 +5,9 @@ export async function createUntisClient() {
         process.env.WEBUNTIS_SCHOOL,
         process.env.WEBUNTIS_USERNAME,
         process.env.WEBUNTIS_PASSWORD,
-        process.env.WEBUNTIS_URl
+        process.env.WEBUNTIS_URl,
+        undefined,
+        true
     );
 
     await untis.login();

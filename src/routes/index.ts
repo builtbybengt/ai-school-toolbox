@@ -11,16 +11,18 @@ router.get('/', async (req, res, next) => {
 
     try {
         untis = await createUntisClient();
-    } catch {
+    } catch (error) {
+        if (!(error instanceof Error)) return;
+
+        console.error(error.name + ' - ' + error.message);
+
         res.status(500).json({
             error: 'Could not connect to Untis'
         });
     }
 
     if (!untis) {
-        res.status(500).json({
-            error: 'Could not connect to Untis'
-        });
+        return;
     }
 
     const start = new Date();
