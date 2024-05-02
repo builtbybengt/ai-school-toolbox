@@ -51,7 +51,7 @@ router.get('/', async (req, res, next) => {
         }
 
         writeFileSync(
-            process.env.VOLUME_MOUNT_PATH ?? './out/' + 'calendar.ics',
+            process.env.RAILWAY_VOLUME_MOUNT_PATH ?? './out/' + 'calendar.ics',
             value
         );
 
