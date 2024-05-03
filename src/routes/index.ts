@@ -2,15 +2,35 @@ import { Router } from 'express';
 import { createUntisClient } from '../lib/untis';
 import type { Base } from 'webuntis';
 import { EventAttributes, createEvents } from 'ics';
-import { writeFileSync } from 'fs';
+// import { writeFileSync } from 'fs';
 
 const router = Router();
 
 router.get('/', async (req, res, next) => {
     let untis: Base | undefined;
 
+    const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+
+    const school = requestUrl.searchParams.get('untis_school');
+    const username = requestUrl.searchParams.get('untis_username');
+    const password = requestUrl.searchParams.get('untis_password');
+    const url = requestUrl.searchParams.get('untis_url');
+
+    if(!school || !username || !password || !url) {
+        res.status(400).json({
+            error: 'Missing parameters - untis_school, untis_username, untis_password, untis_url'
+        });
+
+        return;
+    }
+
     try {
-        untis = await createUntisClient();
+        untis = await createUntisClient({
+            school,
+            url,
+            username,
+            password
+        });
     } catch (error) {
         if (!(error instanceof Error)) return;
 
@@ -52,12 +72,7 @@ router.get('/', async (req, res, next) => {
             });
         }
 
-        writeFileSync(
-            process.env.RAILWAY_VOLUME_MOUNT_PATH ?? './out/' + 'calendar.ics',
-            value
-        );
-
-        res.json({ message: 'Calendar created' });
+        res.status(200).send(value)
     });
 });
 

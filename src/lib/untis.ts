@@ -1,11 +1,23 @@
 import { WebUntis } from 'webuntis';
 
-export async function createUntisClient() {
+type CreateUntisClientOptions = {
+    school: string;
+    username: string;
+    password: string;
+    url: string;
+};
+
+export async function createUntisClient({
+    school,
+    username,
+    password,
+    url
+}: undefined | CreateUntisClientOptions) {
     const untis = new WebUntis(
-        process.env.WEBUNTIS_SCHOOL,
-        process.env.WEBUNTIS_USERNAME,
-        process.env.WEBUNTIS_PASSWORD,
-        process.env.WEBUNTIS_URl,
+        school ?? process.env.WEBUNTIS_SCHOOL,
+        username ?? process.env.WEBUNTIS_USERNAME,
+        password ?? process.env.WEBUNTIS_PASSWORD,
+        url ?? process.env.WEBUNTIS_URL,
         undefined,
         true
     );
