@@ -23,6 +23,9 @@ Dieser Skill nutzt die Tools des Schul-Connectors (ai-school-toolbox). Antworte 
 | Inhalte eines Moodle-Kurses | `moodle_get_course_contents` (courseId aus `moodle_get_courses`) |
 | Moodle-Noten | `moodle_get_grades` |
 | Moodle-Benachrichtigungen | `moodle_get_notifications` |
+| Moodle-Aufgabe ansehen (Status, erlaubte Abgabearten) | `moodle_get_assignment` (cmid = Zahl hinter `view.php?id=`) |
+| Abgabe als Entwurf speichern | `moodle_save_submission` |
+| Endgültig zur Bewertung abgeben | `moodle_submit_for_grading` |
 
 Moodle-Tools gibt es nur, wenn Moodle eingerichtet ist. Fehlen sie, sag das kurz und arbeite nur mit WebUntis.
 
@@ -34,6 +37,14 @@ Moodle-Tools gibt es nur, wenn Moodle eingerichtet ist. Fehlen sie, sag das kurz
 - Prüfungen und Abgaben immer mit Datum und Wochentag angeben, überfällige Moodle-Abgaben zuerst.
 - Fach-Kürzel wie `NSCS_1` in den Langnamen übersetzen (steht in Klammern oder per `get_subjects`).
 - Bei Fehlern mit "bad credentials" oder "Fehlende Umgebungsvariablen": Hinweis geben, dass die Zugangsdaten im Hosting (z. B. Vercel) geprüft werden müssen. Keine Zugangsdaten im Chat erfragen.
+
+## Abgeben auf Moodle
+
+1. Immer zuerst `moodle_get_assignment` aufrufen: Prüfe Frist, Status und ob Text und/oder Dateien erlaubt sind (inkl. Dateityp- und Größenbeschränkung).
+2. Zeig dem Nutzer, was genau abgegeben wird (Text, Dateinamen), und speichere erst dann mit `moodle_save_submission` als Entwurf.
+3. `moodle_submit_for_grading` nur aufrufen, wenn der Nutzer ausdrücklich „ja, abgeben“ o. ä. für genau diese Aufgabe gesagt hat. Danach ist die Abgabe meist gesperrt.
+4. Verlangt die Aufgabe eine Eigenständigkeitserklärung, zeig ihren Wortlaut und setze `acceptStatement` nur nach ausdrücklicher Zustimmung des Nutzers.
+5. Dateien, die der Nutzer im Chat hochgeladen hat (PDF, Fotos), können meist nicht weitergegeben werden. Dann empfehlen, sie selbst auf Moodle hochzuladen.
 
 ## Typische Abläufe
 

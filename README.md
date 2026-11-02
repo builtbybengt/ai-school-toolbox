@@ -42,9 +42,9 @@ Fertig. Teste es mit *„Was steht morgen an?“*
 ## Was kann es?
 
 - **WebUntis:** Stundenplan, Entfall, Vertretung, Prüfungen, Hausaufgaben, Fehlstunden, Ferien
-- **Moodle:** Abgaben, Fristen, Kurse, Noten, Benachrichtigungen
+- **Moodle:** Fristen, Kurse, Noten, Benachrichtigungen und **Aufgaben abgeben** (Text und Dateien)
 
-Alles ist **nur lesend**. Claude kann nichts ändern oder abschicken.
+Fast alles ist **nur lesend**. Einzige Ausnahme ist die Moodle-Abgabe: Claude speichert zuerst nur einen Entwurf. Endgültig abgegeben wird erst, wenn du es im Chat ausdrücklich bestätigst.
 
 Tipp: Lade zusätzlich den [Skill](skills/schul-assistent/SKILL.md) als ZIP unter **Einstellungen → Fähigkeiten → Skills** hoch.
 
