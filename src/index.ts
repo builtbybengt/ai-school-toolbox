@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import express from 'express';
 import router from './routes';
+import mcpRouter from './mcp/http';
 
 if (process.env.NODE_ENV !== 'production') {
     config();
@@ -9,6 +10,7 @@ if (process.env.NODE_ENV !== 'production') {
 const app = express();
 
 app.use('/api/sync', router);
+app.use('/mcp', mcpRouter);
 
 const port = process.env.PORT || 3333;
 
