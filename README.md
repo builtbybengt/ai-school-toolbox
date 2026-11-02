@@ -16,7 +16,7 @@ Frag einfach *„Was steht morgen an?“*, *„Welche Moodle-Abgaben sind offen?
 
 ## ✨ Features
 
-- 🤖 **MCP-Server für Claude:** claude.ai, Claude App, Claude Desktop und Claude Code
+- 🤖 **MCP-Server:** läuft mit claude.ai, Claude App, Claude Desktop und Claude Code
 - 📅 **WebUntis:** Stundenplan mit Entfall und Vertretungen, Prüfungen, Hausaufgaben, Fehlstunden, Ferien, Mitteilungen
 - 🎓 **Moodle ohne API-Zugang:** Abgaben und Fristen, Kurse, Kursinhalte, Noten, Benachrichtigungen
 - 🔑 **Login per QR-Schlüssel:** funktioniert auch bei Microsoft- oder Google-Login, kein Passwort nötig
