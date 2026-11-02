@@ -2,10 +2,11 @@ import { Router } from 'express';
 import { createUntisClient } from '../lib/untis';
 import type { Base } from 'webuntis';
 import { EventAttributes, createEvents } from 'ics';
+import { requireSecret } from '../lib/auth';
 
 const router = Router();
 
-router.get('/', async (_req, res) => {
+router.get(['/', '/:secret'], requireSecret, async (_req, res) => {
     let untis: Base;
 
     try {
@@ -32,14 +33,29 @@ router.get('/', async (_req, res) => {
         const exams = await untis.getExamsForRange(start, end);
 
         const events: EventAttributes[] = exams.map((exam) => {
-            const date = new Date(exam.examDate);
+            // examDate = 20261115, startTime/endTime = 800 / 1350 (local school time)
+            const d = String(exam.examDate);
+            const time = (t: number) => [Math.floor(t / 100), t % 100];
+            const [startH, startM] = time(exam.startTime);
+            const [endH, endM] = time(exam.endTime);
+            const day: [number, number, number] = [
+                Number(d.slice(0, 4)),
+                Number(d.slice(4, 6)),
+                Number(d.slice(6, 8))
+            ];
 
             return {
-                title: `${exam.subject[0]} - ${exam.name}`,
-                description: `${exam.text}`,
-                duration: { minutes: 50 }, // TODO: change later to dynamic from exam.startTime and exam.endTime
-                start: date.toISOString()
-            };
+                title: `${exam.subject} - ${exam.name}`,
+                description: exam.text || undefined,
+                start: [...day, startH, startM],
+                ...(exam.endTime
+                    ? { end: [...day, endH, endM] }
+                    : { duration: { minutes: 50 } }),
+                startInputType: 'local',
+                startOutputType: 'utc',
+                endInputType: 'local',
+                endOutputType: 'utc'
+            } as EventAttributes;
         });
 
         createEvents(events, (error, value) => {

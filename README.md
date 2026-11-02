@@ -31,11 +31,26 @@ Dann **Deploy** klicken. Du bekommst eine Adresse wie `https://ai-school-toolbox
 
 ### 3. In Claude verbinden
 
-In Claude unter **Einstellungen → Connectors** einen eigenen Connector mit dieser Adresse hinzufügen:
+**Empfohlen: Secret im Header.** Wenn dein Client eigene Header unterstützt (z. B. Claude Code, Cursor), nutze die Adresse ohne Secret und schick es als Header mit:
+
+```
+URL:    https://<deine-vercel-adresse>/mcp
+Header: Authorization: Bearer <MCP_SECRET>
+```
+
+Beispiel für Claude Code:
+
+```bash
+claude mcp add --transport http schule https://<deine-vercel-adresse>/mcp --header "Authorization: Bearer <MCP_SECRET>"
+```
+
+**Fallback: Secret in der Adresse.** Nur wenn dein Client keine Header setzen kann (z. B. Connector in der Claude-App unter **Einstellungen → Connectors**):
 
 ```
 https://<deine-vercel-adresse>/mcp/<MCP_SECRET>
 ```
+
+Achtung: Secrets in der URL landen leichter in Logs und im Verlauf.
 
 Fertig. Teste es mit *„Was steht morgen an?“*
 
@@ -54,14 +69,14 @@ Tipp: Lade zusätzlich den [Skill](skills/schul-assistent/SKILL.md) als ZIP unte
 | --- | --- |
 | `bad credentials` | Benutzer oder Schlüssel falsch. Ohne Leerzeichen eintragen und neu deployen. |
 | Schule nicht gefunden | `WEBUNTIS_SCHOOL` muss genau dem Wert „Schule“ entsprechen. |
-| `401 Unauthorized` | Das `MCP_SECRET` in der Adresse stimmt nicht. |
+| `401 Unauthorized` | Das `MCP_SECRET` im Header bzw. in der Adresse stimmt nicht. |
 | Moodle-Login fehlgeschlagen | Login mit Microsoft oder Google wird bei Moodle nicht unterstützt. |
 
 Werte geändert? Immer unter **Deployments → Redeploy** neu deployen.
 
 ## Sicherheit
 
-Teile deine Connector-Adresse mit niemandem, sie enthält dein `MCP_SECRET`. Der WebUntis-Schlüssel ist wie ein Passwort. Du kannst ihn in WebUntis jederzeit neu erzeugen.
+Du bist selbst für dein `MCP_SECRET` und die Moodle-Instanz verantwortlich, mit der du dich verbindest. Nutze ein langes Zufalls-Secret (z. B. `openssl rand -hex 32`) und schick es am besten per `Authorization`-Header. Teile deine Connector-Adresse mit niemandem, falls sie das Secret enthält. Auch der Kalender-Export `/api/sync` ist mit demselben Secret geschützt. Der WebUntis-Schlüssel ist wie ein Passwort. Du kannst ihn in WebUntis jederzeit neu erzeugen.
 
 ## Für Entwickler
 

@@ -1,10 +1,10 @@
 {
-    "name": "expressjs",
+    "name": "ai-school-toolbox",
     "version": "1.0.0",
     "main": "index.js",
     "type": "commonjs",
     "license": "MIT",
-    "author": "Matt Spear",
+    "author": "Bengt Mayr",
     "scripts": {
         "dev": "nodemon src/index.ts",
         "build": "tsc",

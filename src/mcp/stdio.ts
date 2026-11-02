@@ -1,3 +1,4 @@
+import '../lib/timezone';
 import { config } from 'dotenv';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createMcpServer } from './server';
