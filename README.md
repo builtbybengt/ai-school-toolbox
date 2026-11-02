@@ -33,7 +33,7 @@ WEBUNTIS_URL=neilo.webuntis.com
 MCP_SECRET=<langer-zufallswert>
 ```
 
-Schulname und Server findest du in der WebUntis-URL nach dem Login, z. B. `https://neilo.webuntis.com/WebUntis/?school=meine-schule`. Ein Secret erzeugst du mit `openssl rand -hex 32`.
+Schulname und Server findest du in der WebUntis-URL nach dem Login, z. B. `https://meine-schule.webuntis.com/WebUntis/?school=meine-schule`. `WEBUNTIS_URL` ist optional: Fehlt der Server oder passt er nicht zur Schule, wird er automatisch über die WebUntis-Schulsuche ermittelt. Ein Secret erzeugst du mit `openssl rand -hex 32`.
 
 ### Mit Claude verbinden (claude.ai / Claude App)
 
