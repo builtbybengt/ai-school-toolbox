@@ -6,6 +6,11 @@ import {
     getMoodlePage,
     moodleUrl
 } from '../lib/moodle';
+import {
+    getAssignment,
+    saveSubmission,
+    submitForGrading
+} from '../lib/moodle-assign';
 
 function json(data: unknown) {
     return {
@@ -314,6 +319,141 @@ export function registerMoodleTools(server: McpServer) {
                 }
 
                 return json(grades);
+            } catch (error) {
+                return errorResult(error);
+            }
+        }
+    );
+
+    server.registerTool(
+        'moodle_get_assignment',
+        {
+            title: 'Moodle-Aufgabe anzeigen',
+            description:
+                'Zeigt eine Moodle-Aufgabe: Beschreibung, Termine, Abgabestatus und welche Abgabearten (Text, Dateien) erlaubt sind. ' +
+                'Die ID (cmid) steht in moodle_get_deadlines (url ...view.php?id=) oder moodle_get_course_contents.',
+            inputSchema: {
+                cmid: z
+                    .number()
+                    .int()
+                    .describe(
+                        'ID der Aufgabe (Kursmodul-ID, die Zahl hinter view.php?id=)'
+                    )
+            },
+            annotations: { readOnlyHint: true }
+        },
+        async ({ cmid }) => {
+            try {
+                return json(await getAssignment(cmid));
+            } catch (error) {
+                return errorResult(error);
+            }
+        }
+    );
+
+    server.registerTool(
+        'moodle_save_submission',
+        {
+            title: 'Moodle-Abgabe als Entwurf speichern',
+            description:
+                'Speichert Text und/oder Dateien als ENTWURF einer Moodle-Abgabe. Der Entwurf kann danach noch geändert werden und ist noch nicht zur Bewertung abgegeben. ' +
+                'Zeige dem Nutzer vorher, was gespeichert wird. Dateien als Text (z. B. Code, .txt, .md) oder base64.',
+            inputSchema: {
+                cmid: z
+                    .number()
+                    .int()
+                    .describe('ID der Aufgabe (aus moodle_get_assignment)'),
+                text: z
+                    .string()
+                    .optional()
+                    .describe(
+                        'Online-Text der Abgabe (Klartext oder HTML). Ersetzt den bisherigen Text.'
+                    ),
+                files: z
+                    .array(
+                        z.object({
+                            name: z
+                                .string()
+                                .describe(
+                                    'Dateiname inkl. Endung, z. B. loesung.py'
+                                ),
+                            content: z.string().describe('Dateiinhalt'),
+                            encoding: z
+                                .enum(['text', 'base64'])
+                                .optional()
+                                .describe('text (Standard) oder base64')
+                        })
+                    )
+                    .optional()
+                    .describe(
+                        'Dateien, die hochgeladen werden. Gleichnamige Dateien werden ersetzt.'
+                    ),
+                replaceFiles: z
+                    .boolean()
+                    .optional()
+                    .describe(
+                        'Alle bisher hochgeladenen Dateien vorher entfernen (Standard: false)'
+                    )
+            },
+            annotations: {
+                readOnlyHint: false,
+                destructiveHint: false,
+                openWorldHint: true
+            }
+        },
+        async ({ cmid, text, files, replaceFiles }) => {
+            try {
+                const result = await saveSubmission(cmid, {
+                    text,
+                    files,
+                    replaceFiles
+                });
+                return json({
+                    saved: true,
+                    hinweis:
+                        'Als Entwurf gespeichert, noch nicht zur Bewertung abgegeben.',
+                    ...result
+                });
+            } catch (error) {
+                return errorResult(error);
+            }
+        }
+    );
+
+    server.registerTool(
+        'moodle_submit_for_grading',
+        {
+            title: 'Moodle-Abgabe endgültig zur Bewertung abgeben',
+            description:
+                'Gibt eine gespeicherte Moodle-Abgabe ENDGÜLTIG zur Bewertung ab. Danach ist sie meist gesperrt und kann nicht mehr geändert werden. ' +
+                'NUR aufrufen, nachdem der Nutzer im Chat ausdrücklich bestätigt hat, dass genau diese Aufgabe jetzt abgegeben werden soll. ' +
+                'Verlangt die Aufgabe eine Eigenständigkeitserklärung, kommt ein Fehler mit dem Wortlaut: diesen dem Nutzer zeigen und acceptStatement nur nach seiner ausdrücklichen Zustimmung setzen.',
+            inputSchema: {
+                cmid: z.number().int().describe('ID der Aufgabe'),
+                confirm: z
+                    .literal(true)
+                    .describe(
+                        'Muss true sein: der Nutzer hat die endgültige Abgabe ausdrücklich bestätigt'
+                    ),
+                acceptStatement: z
+                    .boolean()
+                    .optional()
+                    .describe(
+                        'Nur true, wenn der Nutzer der Eigenständigkeitserklärung der Aufgabe ausdrücklich zugestimmt hat'
+                    )
+            },
+            annotations: {
+                readOnlyHint: false,
+                destructiveHint: true,
+                openWorldHint: true
+            }
+        },
+        async ({ cmid, acceptStatement }) => {
+            try {
+                const result = await submitForGrading(cmid, {
+                    acceptStatement
+                });
+                return json({ submitted: true, ...result });
             } catch (error) {
                 return errorResult(error);
             }

@@ -17,7 +17,7 @@ type Session = {
 
 export class MoodleError extends Error {}
 
-const USER_AGENT =
+export const USER_AGENT =
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
 
 /** One cached session per warm process / serverless instance. */
@@ -63,12 +63,12 @@ function storeCookies(cookies: Map<string, string>, response: AxiosResponse) {
     }
 }
 
-function cookieHeader(cookies: Map<string, string>) {
+export function cookieHeader(cookies: Map<string, string>) {
     return [...cookies].map(([k, v]) => `${k}=${v}`).join('; ');
 }
 
 /** GET/POST with manual cookie handling and redirect following. */
-async function request(
+export async function request(
     cookies: Map<string, string>,
     url: string,
     options: { method?: 'GET' | 'POST'; form?: Record<string, string> } = {}
@@ -117,7 +117,7 @@ async function request(
     throw new MoodleError('Zu viele Weiterleitungen beim Moodle-Login');
 }
 
-function decodeHtml(value: string) {
+export function decodeHtml(value: string) {
     return value
         .replace(/&amp;/g, '&')
         .replace(/&quot;/g, '"')
@@ -180,7 +180,7 @@ async function login(): Promise<Session> {
     };
 }
 
-async function getSession(forceNew = false) {
+export async function getSession(forceNew = false) {
     if (!cachedSession || forceNew) cachedSession = await login();
     return cachedSession;
 }
