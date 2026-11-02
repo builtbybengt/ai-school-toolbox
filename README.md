@@ -39,6 +39,8 @@ Moodle wird **ohne Web-Service-Token** angebunden: Der Server meldet sich wie ei
 
 ## 🚀 In 5 Minuten startklar
 
+> 📖 Ausführliche Schritt-für-Schritt-Anleitung (Vercel und Cloudflare): **[docs/SETUP.md](docs/SETUP.md)**
+
 ### 1. Zugangsdaten holen
 
 **WebUntis:** In WebUntis auf *Profil → Freigaben → Datenzugriff → Anzeigen*. Dort stehen Schule, Url, Benutzer und Schlüssel.
