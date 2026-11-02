@@ -116,12 +116,12 @@ flowchart LR
     S -- Browser-Login --> M[Moodle]
 ```
 
-Der Server meldet sich mit deinen Zugangsdaten bei WebUntis und Moodle an und stellt die Daten als **nur lesende Tools** bereit. Moodle braucht dafür **keinen API-Zugang**: Der Server loggt sich wie ein Browser ein und nutzt die interne Schnittstelle der Moodle-Webseite.
+Der Server meldet sich mit deinen Zugangsdaten bei WebUntis und Moodle an und stellt die Daten als Tools bereit. Bis auf die Moodle-Abgabe lesen alle Tools nur. Moodle braucht dafür **keinen API-Zugang**: Der Server loggt sich wie ein Browser ein und nutzt die interne Schnittstelle der Moodle-Webseite.
 
 | | Tools |
 | --- | --- |
 | **WebUntis** | Stundenplan mit Entfall und Vertretung, Prüfungen, Hausaufgaben, Fehlstunden, Ferien, Mitteilungen, Fächer |
-| **Moodle** | Abgaben und Fristen, Kurse, Kursinhalte, Noten, Benachrichtigungen, Login-Test |
+| **Moodle** | Fristen, Kurse, Kursinhalte, Noten, Benachrichtigungen, Login-Test und **Aufgaben abgeben** (Text und Dateien) |
 | **Prompts** | Was steht morgen an?, Wochenüberblick, Lernplan, Fehlstunden-Check, Moodle-To-do |
 
 Dazu gibt es einen [Skill](skills/schul-assistent/SKILL.md), der Claude zeigt, wie es die Tools am besten kombiniert, und einen ICS-Kalender mit deinen Prüfungen unter `/api/sync`.
@@ -131,7 +131,7 @@ Dazu gibt es einen [Skill](skills/schul-assistent/SKILL.md), der Claude zeigt, w
 <details>
 <summary><b>Sind meine Daten sicher?</b></summary>
 
-Alle Tools sind nur lesend. Zugangsdaten liegen nur in den Umgebungsvariablen deines Hostings und tauchen nie in Antworten auf. Der Endpoint ist per `MCP_SECRET` geschützt, teile die Connector-URL deshalb mit niemandem. Den WebUntis-Schlüssel kannst du jederzeit unter *Zugriff über Untis Mobile* neu erzeugen.
+Alle Tools lesen nur, mit einer Ausnahme: die Moodle-Abgabe. Sie speichert zuerst nur einen Entwurf, den du noch ändern kannst. Endgültig abgegeben wird erst, wenn du es im Chat ausdrücklich bestätigst, und eine Eigenständigkeitserklärung wird nie ohne deine Zustimmung bestätigt. Zugangsdaten liegen nur in den Umgebungsvariablen deines Hostings und tauchen nie in Antworten auf. Der Endpoint ist per `MCP_SECRET` geschützt, teile die Connector-URL deshalb mit niemandem. Den WebUntis-Schlüssel kannst du jederzeit unter *Zugriff über Untis Mobile* neu erzeugen.
 
 </details>
 
