@@ -5,7 +5,7 @@ description: Persönlicher Schul-Assistent für WebUntis und Moodle. Verwenden, 
 
 # Schul-Assistent (WebUntis + Moodle)
 
-Dieser Skill nutzt die Tools des Schul-Connectors (untis-ics-sync). Antworte auf Deutsch, kurz und übersichtlich.
+Dieser Skill nutzt die Tools des Schul-Connectors (ai-school-toolbox). Antworte auf Deutsch, kurz und übersichtlich.
 
 ## Welche Tools wofür
 

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎒 untis-ics-sync
+# 🎒 ai-school-toolbox
 
 **WebUntis + Moodle als MCP-Connector.** Stundenplan, Prüfungen, Abgaben und Noten direkt im Chat.
 
@@ -39,7 +39,7 @@ Frag einfach *„Was steht morgen an?“*, *„Welche Moodle-Abgaben sind offen?
 
 ```mermaid
 flowchart LR
-    C[Claude] -- MCP --> S[untis-ics-sync]
+    C[Claude] -- MCP --> S[ai-school-toolbox]
     S -- QR-Schlüssel --> U[WebUntis]
     S -- Browser-Login --> M[Moodle]
 ```
