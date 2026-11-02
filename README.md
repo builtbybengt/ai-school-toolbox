@@ -2,7 +2,7 @@
 
 Express-Server, der WebUntis-Daten bereitstellt:
 
-- `GET /api/sync` – Prüfungen als `.ics`-Kalender (Zugangsdaten als URL-Parameter `untis_school`, `untis_username`, `untis_password`, `untis_url`)
+- `GET /api/sync` – Prüfungen als `.ics`-Kalender (Zugangsdaten aus den Umgebungsvariablen `WEBUNTIS_*`)
 - `POST /mcp` – MCP-Server, um WebUntis mit Claude zu verbinden
 
 ## MCP-Server (WebUntis ↔ Claude)
