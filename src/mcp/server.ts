@@ -2,6 +2,9 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { Base } from 'webuntis';
 import { createUntisClient } from '../lib/untis';
+import { isMoodleConfigured } from '../lib/moodle';
+import { registerMoodleTools } from './moodle-tools';
+import { registerPrompts } from './prompts';
 
 // --- Helpers -------------------------------------------------------------
 
@@ -96,8 +99,8 @@ const dateRange = {
 
 export function createMcpServer() {
     const server = new McpServer({
-        name: 'webuntis',
-        version: '1.0.0'
+        name: 'schule',
+        version: '1.1.0'
     });
 
     server.registerTool(
@@ -380,6 +383,10 @@ export function createMcpServer() {
             }
         }
     );
+
+    const moodle = isMoodleConfigured();
+    if (moodle) registerMoodleTools(server);
+    registerPrompts(server, { moodle });
 
     return server;
 }
