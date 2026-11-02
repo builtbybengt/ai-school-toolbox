@@ -67,7 +67,11 @@ export function cookieHeader(cookies: Map<string, string>) {
     return [...cookies].map(([k, v]) => `${k}=${v}`).join('; ');
 }
 
-/** GET/POST with manual cookie handling and redirect following. */
+/**
+ * GET/POST with manual cookie handling and redirect following.
+ * Cookies are only sent to (and accepted from) the host of the original URL,
+ * so a redirect to another domain (e.g. SSO) never receives the MoodleSession cookie.
+ */
 export async function request(
     cookies: Map<string, string>,
     url: string,
@@ -77,8 +81,10 @@ export async function request(
     let body = options.form
         ? new URLSearchParams(options.form).toString()
         : undefined;
+    const originHost = new URL(url).host;
 
     for (let i = 0; i < 10; i++) {
+        const sameHost = new URL(url).host === originHost;
         const response = await axios.request<string>({
             url,
             method,
@@ -88,13 +94,13 @@ export async function request(
             responseType: 'text',
             headers: {
                 'User-Agent': USER_AGENT,
-                Cookie: cookieHeader(cookies),
+                ...(sameHost ? { Cookie: cookieHeader(cookies) } : {}),
                 ...(body
                     ? { 'Content-Type': 'application/x-www-form-urlencoded' }
                     : {})
             }
         });
-        storeCookies(cookies, response);
+        if (sameHost) storeCookies(cookies, response);
 
         if (
             response.status >= 300 &&
