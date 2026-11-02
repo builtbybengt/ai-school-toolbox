@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { WebUntis } from 'webuntis';
 
 type CreateUntisClientOptions = {
@@ -27,18 +28,16 @@ async function resolveSchool(search: string): Promise<ResolvedSchool | undefined
     const cached = resolvedSchools.get(search);
     if (cached) return cached;
 
-    const response = await fetch(SCHOOL_SEARCH_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+    const { data } = await axios.post<any>(
+        SCHOOL_SEARCH_URL,
+        {
             id: '1',
             jsonrpc: '2.0',
             method: 'searchSchool',
             params: [{ search }]
-        })
-    });
-
-    const data: any = await response.json().catch(() => undefined);
+        },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
     const schools: any[] = data?.result?.schools ?? [];
 
     // Prefer an exact login name match, otherwise only accept an unambiguous result.
