@@ -19,6 +19,11 @@ app.use(
     express.static('public')
 );
 
-app.listen(port, () =>
-    console.log(`API available on http://localhost:${port}`)
-);
+// On Vercel the exported app is run as a serverless function; locally / on Railway we listen ourselves.
+if (!process.env.VERCEL) {
+    app.listen(port, () =>
+        console.log(`API available on http://localhost:${port}`)
+    );
+}
+
+export default app;
