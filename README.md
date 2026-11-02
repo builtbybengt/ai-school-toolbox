@@ -10,30 +10,96 @@
 
 </div>
 
-Frag einfach *„Was steht morgen an?“*, *„Welche Moodle-Abgaben sind offen?“* oder *„Mach mir einen Lernplan für die nächsten Schularbeiten“*.
-
 ## Setup
 
-1. **Zugangsdaten holen:** In WebUntis unter *Profil → Freigaben → Zugriff über Untis Mobile* das QR-Symbol anklicken. Dort stehen Schule, Url, Benutzer und Schlüssel. Für Moodle brauchst du Adresse, Benutzername und Passwort.
-2. **Deployen:** Repo forken und auf [Vercel](https://vercel.com/new) importieren.
-3. **Variablen setzen:**
+In etwa 10 Minuten ist dein eigener Connector online. Du brauchst einen GitHub-Account und einen kostenlosen Vercel-Account.
+
+### 1. Zugangsdaten holen
+
+**WebUntis:** Klick in WebUntis unten links auf deinen Namen, wechsle auf den Reiter **Freigaben** und klick bei **Zugriff über Untis Mobile** auf das QR-Symbol.
+
+![WebUntis: Profil → Freigaben → Zugriff über Untis Mobile](docs/images/webuntis-datenzugriff.png)
+
+Du brauchst Schule, Url, Benutzer und Schlüssel. Die Schulnummer ist nicht nötig.
+
+> ⚠️ Der Schlüssel ist wie ein Passwort. Falls er doch mal irgendwo gelandet ist: im selben Fenster einfach einen neuen erzeugen.
+
+**Moodle (optional):** Adresse deines Moodle, Benutzername und Passwort.
+
+**Connector-Secret:** Ein langer Zufallswert, z. B. von `openssl rand -hex 32` oder einem Passwort-Generator (mindestens 32 Zeichen).
+
+### 2. Auf Vercel deployen
+
+1. Repo oben rechts **forken**.
+2. Auf [vercel.com/new](https://vercel.com/new) mit GitHub anmelden und den Fork importieren.
+3. Unter **Environment Variables** die Werte eintragen:
 
    | Variable | | Wert |
    | --- | :---: | --- |
    | `WEBUNTIS_SCHOOL` | ✅ | „Schule“ |
    | `WEBUNTIS_USERNAME` | ✅ | „Benutzer“ |
-   | `WEBUNTIS_SECRET` | ✅ | „Schlüssel“ (alternativ `WEBUNTIS_PASSWORD`) |
+   | `WEBUNTIS_SECRET` | ✅ | „Schlüssel“ (alternativ `WEBUNTIS_PASSWORD` mit dem normalen Passwort) |
    | `WEBUNTIS_URL` | | „Url“, sonst automatisch ermittelt |
-   | `MOODLE_URL`, `MOODLE_USERNAME`, `MOODLE_PASSWORD` | | Für die Moodle-Tools |
-   | `MCP_SECRET` | ✅ | Langer Zufallswert (`openssl rand -hex 32`) |
+   | `MOODLE_URL` | | z. B. `https://moodle.meine-schule.at`, ohne sie gibt es keine Moodle-Tools |
+   | `MOODLE_USERNAME`, `MOODLE_PASSWORD` | | Moodle-Login |
+   | `MCP_SECRET` | ✅ | Das Connector-Secret |
 
-4. **Verbinden:** In Claude unter *Einstellungen → Connectors* einen eigenen Connector mit dieser URL hinzufügen:
+   ![Umgebungsvariablen](docs/images/umgebungsvariablen.png)
 
-   ```
-   https://<dein-projekt>.vercel.app/mcp/<MCP_SECRET>
-   ```
+4. **Deploy** klicken. Nach etwa einer Minute bekommst du eine Adresse wie `https://ai-school-toolbox-xyz.vercel.app`.
 
-📖 Schritt für Schritt mit Screenshots, Cloudflare-Alternative und Fehlerbehebung: **[docs/SETUP.md](docs/SETUP.md)**
+Das Framework-Preset stellt `vercel.json` automatisch auf Express, `PORT` brauchst du nicht. Werte später geändert? Unter **Settings → Environment Variables** anpassen und unter **Deployments → Redeploy** neu deployen.
+
+### 3. Mit Claude verbinden
+
+In Claude unter **Einstellungen → Connectors** einen eigenen Connector hinzufügen:
+
+```
+https://<deine-vercel-adresse>/mcp/<MCP_SECRET>
+```
+
+Testen mit *„Was steht morgen an?“* oder *„Teste meinen Moodle-Login“*. Optional den [Skill](skills/schul-assistent/SKILL.md) als ZIP unter **Einstellungen → Fähigkeiten → Skills** hochladen.
+
+<details>
+<summary><b>Alternative: Cloudflare Tunnel</b></summary>
+
+Cloudflare Workers führen keine Express-Apps aus. Stattdessen läuft der Server auf einem eigenen Rechner (Raspberry Pi, Heim-PC, VPS) und Cloudflare macht ihn per HTTPS erreichbar. Der Rechner muss dauerhaft laufen.
+
+```bash
+git clone https://github.com/<dein-name>/ai-school-toolbox.git
+```
+
+```bash
+cd ai-school-toolbox && cp .env.example .env
+```
+
+`.env` mit deinen Werten füllen, dann:
+
+```bash
+pnpm install && pnpm build && pnpm start
+```
+
+```bash
+cloudflared tunnel --url http://localhost:3333
+```
+
+Die angezeigte `https://….trycloudflare.com`-Adresse nutzt du in Schritt 3. Für eine feste Adresse richtest du im Cloudflare-Dashboard unter **Zero Trust → Networks → Tunnels** einen benannten Tunnel ein. [cloudflared installieren](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+
+</details>
+
+<details>
+<summary><b>Probleme?</b></summary>
+
+| Fehlermeldung | Lösung |
+| --- | --- |
+| `bad credentials` | Benutzer oder Schlüssel falsch. Keine Leerzeichen oder Anführungszeichen, danach neu deployen. |
+| `invalid schoolname` / Schule nicht gefunden | `WEBUNTIS_SCHOOL` muss genau der Wert „Schule“ sein. |
+| `Fehlende Umgebungsvariablen: …` | Die genannte Variable fehlt. Eintragen und neu deployen. |
+| `Moodle-Login fehlgeschlagen` | Login direkt auf der Moodle-Webseite testen. Microsoft-/Google-Login wird für Moodle nicht unterstützt. |
+| `401 Unauthorized` | `MCP_SECRET` in der Connector-URL stimmt nicht mit Vercel überein. |
+| Moodle-Tools fehlen | `MOODLE_URL` setzen, neu deployen und den Connector in Claude neu verbinden. |
+
+</details>
 
 ## So funktioniert's
 
@@ -86,7 +152,7 @@ Claude Desktop ohne Hosting: `pnpm build` ausführen und `node dist/mcp/stdio.js
 <details>
 <summary><b>Kann ich statt Vercel auch Cloudflare oder Railway nutzen?</b></summary>
 
-Ja. Cloudflare geht über einen Tunnel zu einem eigenen Rechner, siehe [docs/SETUP.md](docs/SETUP.md). Auf Railway oder einem eigenen Server läuft das Projekt als normaler Node-Server mit `pnpm build && pnpm start`.
+Ja. Cloudflare geht über einen Tunnel zu einem eigenen Rechner, siehe oben unter Setup. Auf Railway oder einem eigenen Server läuft das Projekt als normaler Node-Server mit `pnpm build && pnpm start`.
 
 </details>
 
