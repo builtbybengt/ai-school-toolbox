@@ -30,6 +30,12 @@ Du brauchst Schule, Url, Benutzer und Schlüssel. Die Schulnummer ist nicht nöt
 
 ### 2. Auf Vercel deployen
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbuiltbybengt%2Fai-school-toolbox&project-name=ai-school-toolbox&repository-name=ai-school-toolbox&env=WEBUNTIS_SCHOOL,WEBUNTIS_USERNAME,WEBUNTIS_SECRET,MCP_SECRET&envDescription=WebUntis-Zugangsdaten%20aus%20Profil%20%E2%86%92%20Freigaben%20%E2%86%92%20Zugriff%20%C3%BCber%20Untis%20Mobile%20und%20ein%20langer%20Zufallswert%20als%20MCP_SECRET&envLink=https%3A%2F%2Fgithub.com%2Fbuiltbybengt%2Fai-school-toolbox%23setup)
+
+Der Button kopiert das Repo in deinen GitHub-Account und fragt direkt die Pflicht-Variablen ab. Moodle-Variablen trägst du danach unter **Settings → Environment Variables** nach.
+
+Oder manuell:
+
 1. Repo oben rechts **forken**.
 2. Auf [vercel.com/new](https://vercel.com/new) mit GitHub anmelden und den Fork importieren.
 3. Unter **Environment Variables** die Werte eintragen:
