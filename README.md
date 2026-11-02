@@ -43,7 +43,7 @@ Moodle wird **ohne Web-Service-Token** angebunden: Der Server meldet sich wie ei
 
 ### 1. Zugangsdaten holen
 
-**WebUntis:** In WebUntis auf *Profil → Freigaben → Datenzugriff → Anzeigen*. Dort stehen Schule, Url, Benutzer und Schlüssel.
+**WebUntis:** In WebUntis auf *Profil → Freigaben → Zugriff über Untis Mobile* das QR-Symbol anklicken. Dort stehen Schule, Url, Benutzer und Schlüssel.
 
 **Moodle (optional):** Die Adresse deines Moodle sowie Benutzername und Passwort, mit denen du dich auf der Moodle-Webseite anmeldest.
 
@@ -57,9 +57,9 @@ Oder manuell: Repo in Vercel importieren (das Framework-Preset wird per `vercel.
 
 | Variable | Pflicht | Beschreibung |
 | --- | :---: | --- |
-| `WEBUNTIS_SCHOOL` | ✅ | „Schule“ aus dem Datenzugriff, z. B. `htbla-kaindorf` |
-| `WEBUNTIS_USERNAME` | ✅ | „Benutzer“ aus dem Datenzugriff |
-| `WEBUNTIS_SECRET` | ✅* | „Schlüssel“ aus dem Datenzugriff |
+| `WEBUNTIS_SCHOOL` | ✅ | „Schule“ aus „Zugriff über Untis Mobile“, z. B. `htbla-kaindorf` |
+| `WEBUNTIS_USERNAME` | ✅ | „Benutzer“ aus „Zugriff über Untis Mobile“ |
+| `WEBUNTIS_SECRET` | ✅* | „Schlüssel“ aus „Zugriff über Untis Mobile“ |
 | `WEBUNTIS_PASSWORD` | ✅* | Alternativ: normales WebUntis-Passwort (nicht bei Microsoft-/Google-Login) |
 | `WEBUNTIS_URL` | – | „Url“, z. B. `meine-schule.webuntis.com`. Wird sonst automatisch ermittelt |
 | `WEBUNTIS_QR_CODE` | – | Alternativ zu allem oben: der komplette QR-Text `untis://setschool?...` |
@@ -158,7 +158,7 @@ pnpm install && pnpm build
       "env": {
         "WEBUNTIS_SCHOOL": "meine-schule",
         "WEBUNTIS_USERNAME": "max.mustermann",
-        "WEBUNTIS_SECRET": "<Schlüssel aus dem Datenzugriff>",
+        "WEBUNTIS_SECRET": "<Schlüssel aus „Zugriff über Untis Mobile“>",
         "MOODLE_URL": "https://moodle.meine-schule.at",
         "MOODLE_USERNAME": "max.mustermann",
         "MOODLE_PASSWORD": "<Moodle-Passwort>"
@@ -185,7 +185,7 @@ Läuft als normaler Express-Server (`pnpm build && pnpm start`, Port über `PORT
 
 - Alle Tools sind **nur lesend**. Es wird nichts in WebUntis oder Moodle verändert.
 - Zugangsdaten liegen nur in den Umgebungsvariablen deines Hostings und werden nie in Antworten oder Fehlermeldungen ausgegeben.
-- Der MCP-Endpoint ist per `MCP_SECRET` geschützt. Wenn du den QR-Schlüssel versehentlich geteilt hast, erzeug in WebUntis unter *Datenzugriff* einen neuen.
+- Der MCP-Endpoint ist per `MCP_SECRET` geschützt. Wenn du den QR-Schlüssel versehentlich geteilt hast, erzeug in WebUntis unter *Freigaben → Zugriff über Untis Mobile* einen neuen.
 
 ## 🧑‍💻 Entwicklung
 

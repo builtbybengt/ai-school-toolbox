@@ -4,18 +4,18 @@ In etwa 10 Minuten hast du deinen eigenen Schul-Connector online. Du brauchst nu
 
 ## Schritt 1: Zugangsdaten sammeln
 
-**WebUntis:** Öffne WebUntis im Browser und geh auf **Profil → Freigaben → Datenzugriff → Anzeigen**. Dort siehst du einen QR-Code und darunter vier Werte:
+**WebUntis:** Öffne WebUntis im Browser, klick unten links auf deinen Namen (Profil), wechsle oben auf den Reiter **Freigaben** und klick bei **Zugriff über Untis Mobile** auf das QR-Symbol. Es öffnet sich ein Fenster mit QR-Code und darunter diesen Werten:
 
-| Im Datenzugriff | Wird zu |
+| Im Fenster | Wird zu |
 | --- | --- |
 | Schule | `WEBUNTIS_SCHOOL` |
 | Url | `WEBUNTIS_URL` |
 | Benutzer | `WEBUNTIS_USERNAME` |
 | Schlüssel | `WEBUNTIS_SECRET` |
 
-<!-- Screenshot vom WebUntis-Datenzugriff hier einfügen (Schlüssel unkenntlich machen!):
-![WebUntis Datenzugriff](images/webuntis-datenzugriff.png)
--->
+![WebUntis: Profil → Freigaben → Zugriff über Untis Mobile](images/webuntis-datenzugriff.png)
+
+Die Schulnummer brauchst du nicht.
 
 > ⚠️ Der Schlüssel ist wie ein Passwort. Teile ihn mit niemandem. Falls er doch mal irgendwo gelandet ist: im selben Menü einfach einen neuen erzeugen.
 
@@ -89,8 +89,8 @@ cloudflared tunnel --url http://localhost:3333
 
 | Fehlermeldung | Lösung |
 | --- | --- |
-| `bad credentials` | Benutzer oder Schlüssel falsch. Werte im Datenzugriff prüfen, keine Leerzeichen oder Anführungszeichen, danach neu deployen. |
-| `invalid schoolname` / Schule nicht gefunden | `WEBUNTIS_SCHOOL` muss genau der Wert „Schule“ aus dem Datenzugriff sein. |
+| `bad credentials` | Benutzer oder Schlüssel falsch. Werte unter „Zugriff über Untis Mobile“ prüfen, keine Leerzeichen oder Anführungszeichen, danach neu deployen. |
+| `invalid schoolname` / Schule nicht gefunden | `WEBUNTIS_SCHOOL` muss genau der Wert „Schule“ aus „Zugriff über Untis Mobile“ sein. |
 | `Fehlende Umgebungsvariablen: …` | Die genannte Variable fehlt in Vercel. Eintragen und neu deployen. |
 | `Moodle-Login fehlgeschlagen` | Teste Benutzername und Passwort direkt auf der Moodle-Webseite. Login über Microsoft/Google wird für Moodle nicht unterstützt. |
 | `401 Unauthorized` | Das `MCP_SECRET` in der Connector-URL stimmt nicht mit dem in Vercel überein. |

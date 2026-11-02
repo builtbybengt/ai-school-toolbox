@@ -6,7 +6,7 @@ type CreateUntisClientOptions = {
     school?: string;
     username?: string;
     password?: string;
-    /** "Schlüssel" from the WebUntis data access QR code (Profil -> Freigaben -> Datenzugriff) */
+    /** "Schlüssel" from the WebUntis data access QR code (Profil -> Freigaben -> Zugriff über Untis Mobile) */
     secret?: string;
     url?: string;
 };
