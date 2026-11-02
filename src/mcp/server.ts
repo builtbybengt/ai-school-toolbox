@@ -47,8 +47,13 @@ function json(data: unknown) {
     };
 }
 
-function errorResult(error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
+function errorResult(error: any) {
+    const apiMessage = error?.response?.data?.error?.message;
+    const message = apiMessage
+        ? `WebUntis: ${apiMessage}`
+        : error instanceof Error
+          ? error.message
+          : String(error);
     return {
         isError: true,
         content: [{ type: 'text' as const, text: `Fehler: ${message}` }]
