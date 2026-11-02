@@ -76,7 +76,7 @@ function describeError(error: any): string {
     const message = error instanceof Error ? error.message : String(error);
     // The webuntis lib throws 'Failed to login. {"jsonrpc":...,"error":{"message":"bad credentials"}}'
     const embedded = message.match(/"message":"([^"]+)"/)?.[1];
-    if (embedded === 'bad credentials') {
+    if (embedded === 'bad credentials' || message.includes('bad credentials')) {
         return 'WebUntis-Login fehlgeschlagen: Benutzername, Passwort oder Schlüssel ist falsch (bad credentials).';
     }
     return embedded ? `WebUntis: ${embedded}` : message;
@@ -86,24 +86,78 @@ function isInvalidSchool(error: any) {
     return error?.response?.data?.error?.code === -8500;
 }
 
-async function login(
+function isBadCredentials(error: any) {
+    const message = error instanceof Error ? error.message : String(error);
+    return (
+        message.includes('bad credentials') ||
+        error?.response?.data?.error?.code === -8504
+    );
+}
+
+/** WebUntis keys are base32 strings like "K4ZCPVI5QRAEKIEV". */
+function looksLikeSecret(value: string | undefined) {
+    return !!value && /^[A-Z2-7]{16,32}$/.test(value.trim());
+}
+
+async function attemptLogin(
     school: string,
     host: string,
-    { username, password, secret }: Credentials
+    username: string,
+    auth: { password?: string; secret?: string }
 ) {
-    const untis = secret
+    const untis = auth.secret
         ? new WebUntisSecretAuth(
               school,
               username,
-              secret,
+              auth.secret,
               host,
               undefined,
               authenticator as any,
               true
           )
-        : new WebUntis(school, username, password, host, undefined, true);
+        : new WebUntis(school, username, auth.password, host, undefined, true);
     await untis.login();
     return untis;
+}
+
+async function login(
+    school: string,
+    host: string,
+    { username, password, secret }: Credentials
+) {
+    let method = secret
+        ? 'Schlüssel (WEBUNTIS_SECRET)'
+        : 'Passwort (WEBUNTIS_PASSWORD)';
+
+    try {
+        try {
+            return await attemptLogin(
+                school,
+                host,
+                username,
+                secret ? { secret } : { password }
+            );
+        } catch (error) {
+            // Common mistake: the QR code key was entered as WEBUNTIS_PASSWORD.
+            if (
+                !secret &&
+                isBadCredentials(error) &&
+                looksLikeSecret(password)
+            ) {
+                method = 'Schlüssel (aus WEBUNTIS_PASSWORD)';
+                return await attemptLogin(school, host, username, {
+                    secret: password.trim()
+                });
+            }
+            throw error;
+        }
+    } catch (error) {
+        // Let the caller handle a wrong school/server combination.
+        if (isInvalidSchool(error)) throw error;
+        throw new Error(
+            `${describeError(error)} [Login per ${method} als "${username}" an Schule "${school}" auf ${host}]`
+        );
+    }
 }
 
 /** Parses the text of the WebUntis QR code: untis://setschool?url=...&school=...&user=...&key=... */
@@ -170,7 +224,7 @@ export async function createUntisClient(
         try {
             return await login(school, host, credentials);
         } catch (error) {
-            if (!isInvalidSchool(error)) throw new Error(describeError(error));
+            if (!isInvalidSchool(error)) throw error;
             // Fall through: school/server combination is wrong -> try to resolve it.
         }
     }
@@ -194,6 +248,6 @@ export async function createUntisClient(
     try {
         return await login(resolved.loginName, resolved.server, credentials);
     } catch (error) {
-        throw new Error(describeError(error));
+        throw isInvalidSchool(error) ? new Error(describeError(error)) : error;
     }
 }
