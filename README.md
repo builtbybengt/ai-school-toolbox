@@ -10,8 +10,6 @@
 
 </div>
 
-Frag einfach *„Was steht morgen an?“*, *„Welche Moodle-Abgaben sind offen?“* oder *„Mach mir einen Lernplan für die nächsten Schularbeiten“*.
-
 ## Setup
 
 In etwa 10 Minuten ist dein eigener Connector online. Du brauchst einen GitHub-Account und einen kostenlosen Vercel-Account.
