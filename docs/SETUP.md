@@ -37,7 +37,7 @@ Oder nimm einen Passwort-Generator mit mindestens 32 Zeichen. Das ist `MCP_SECRE
 
 ![Umgebungsvariablen](images/umgebungsvariablen.png)
 
-4. Auf **Deploy** klicken. Nach etwa einer Minute bekommst du eine Adresse wie `https://untis-ics-sync-xyz.vercel.app`.
+4. Auf **Deploy** klicken. Nach etwa einer Minute bekommst du eine Adresse wie `https://ai-school-toolbox-xyz.vercel.app`.
 
 Das Framework-Preset musst du nicht ändern, `vercel.json` stellt es automatisch auf Express. `PORT` brauchst du auf Vercel nicht.
 
@@ -64,11 +64,11 @@ Cloudflare Workers führen keine Express-Apps aus, deshalb läuft dieses Projekt
 1. Projekt auf dem Rechner einrichten:
 
 ```bash
-git clone https://github.com/<dein-name>/untis-ics-sync.git
+git clone https://github.com/<dein-name>/ai-school-toolbox.git
 ```
 
 ```bash
-cd untis-ics-sync && cp .env.example .env
+cd ai-school-toolbox && cp .env.example .env
 ```
 
 2. `.env` mit den Werten aus Schritt 1 füllen, dann bauen und starten:
