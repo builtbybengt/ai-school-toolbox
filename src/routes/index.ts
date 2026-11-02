@@ -12,7 +12,10 @@ router.get('/', async (_req, res) => {
         // Credentials come from WEBUNTIS_SCHOOL, WEBUNTIS_USERNAME, WEBUNTIS_PASSWORD, WEBUNTIS_URL
         untis = await createUntisClient();
     } catch (error) {
-        const message = error instanceof Error ? error.name + ' - ' + error.message : String(error);
+        const message =
+            error instanceof Error
+                ? error.name + ' - ' + error.message
+                : String(error);
         console.error(message);
 
         res.status(500).json({

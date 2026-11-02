@@ -1,4 +1,10 @@
-import { Router, json, type Request, type Response, type NextFunction } from 'express';
+import {
+    Router,
+    json,
+    type Request,
+    type Response,
+    type NextFunction
+} from 'express';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { timingSafeEqual } from 'crypto';
 import { createMcpServer } from './server';
@@ -24,7 +30,8 @@ function auth(req: Request, res: Response, next: NextFunction) {
     }
 
     const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, '');
-    const provided = req.params.secret ?? (req.query.key as string | undefined) ?? bearer;
+    const provided =
+        req.params.secret ?? (req.query.key as string | undefined) ?? bearer;
 
     if (!provided || !safeEqual(provided, secret)) {
         res.status(401).json({ error: 'Unauthorized' });
