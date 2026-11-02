@@ -77,8 +77,11 @@ export async function request(
     let body = options.form
         ? new URLSearchParams(options.form).toString()
         : undefined;
+    // Cookies belong to the Moodle host only; redirects to SSO or other domains must not receive them.
+    const host = new URL(url).host;
 
     for (let i = 0; i < 10; i++) {
+        const sameHost = new URL(url).host === host;
         const response = await axios.request<string>({
             url,
             method,
@@ -88,13 +91,13 @@ export async function request(
             responseType: 'text',
             headers: {
                 'User-Agent': USER_AGENT,
-                Cookie: cookieHeader(cookies),
+                ...(sameHost ? { Cookie: cookieHeader(cookies) } : {}),
                 ...(body
                     ? { 'Content-Type': 'application/x-www-form-urlencoded' }
                     : {})
             }
         });
-        storeCookies(cookies, response);
+        if (sameHost) storeCookies(cookies, response);
 
         if (
             response.status >= 300 &&
