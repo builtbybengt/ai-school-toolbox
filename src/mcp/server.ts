@@ -25,7 +25,9 @@ function parseDate(value: string | undefined, offsetDays = 0): Date {
     if (value) {
         const d = new Date(`${value}T00:00:00`);
         if (isNaN(d.getTime())) {
-            throw new Error(`Ungültiges Datum: "${value}" (erwartet YYYY-MM-DD)`);
+            throw new Error(
+                `Ungültiges Datum: "${value}" (erwartet YYYY-MM-DD)`
+            );
         }
         return d;
     }
@@ -35,15 +37,24 @@ function parseDate(value: string | undefined, offsetDays = 0): Date {
     return d;
 }
 
+/** Date -> Untis date number (20261102) */
+function toKey(d: Date): number {
+    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
 function names(list: { name: string; longname?: string }[] | undefined) {
     return (list ?? []).map((e) =>
-        e.longname && e.longname !== e.name ? `${e.name} (${e.longname})` : e.name
+        e.longname && e.longname !== e.name
+            ? `${e.name} (${e.longname})`
+            : e.name
     );
 }
 
 function json(data: unknown) {
     return {
-        content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }]
+        content: [
+            { type: 'text' as const, text: JSON.stringify(data, null, 2) }
+        ]
     };
 }
 
@@ -106,8 +117,12 @@ export function createMcpServer() {
         async ({ start, end }) => {
             try {
                 const from = parseDate(start);
-                const to = end ? parseDate(end) : new Date(from.getTime() + 6 * 86400000);
-                const lessons = await withUntis((u) => u.getOwnTimetableForRange(from, to));
+                const to = end
+                    ? parseDate(end)
+                    : new Date(from.getTime() + 6 * 86400000);
+                const lessons = await withUntis((u) =>
+                    u.getOwnTimetableForRange(from, to)
+                );
 
                 const result = lessons
                     .map((l) => ({
@@ -124,7 +139,9 @@ export function createMcpServer() {
                         lessonText: l.lstext || undefined
                     }))
                     .sort((a, b) =>
-                        `${a.date} ${a.start}`.localeCompare(`${b.date} ${b.start}`)
+                        `${a.date} ${a.start}`.localeCompare(
+                            `${b.date} ${b.start}`
+                        )
                     );
 
                 return json(result);
@@ -138,7 +155,8 @@ export function createMcpServer() {
         'get_exams',
         {
             title: 'Prüfungen / Schularbeiten abrufen',
-            description: 'Liefert anstehende Prüfungen, Tests und Schularbeiten aus WebUntis.',
+            description:
+                'Liefert anstehende Prüfungen, Tests und Schularbeiten aus WebUntis.',
             inputSchema: {
                 ...dateRange,
                 end: dateRange.end.describe(
@@ -151,7 +169,9 @@ export function createMcpServer() {
             try {
                 const from = parseDate(start);
                 const to = end ? parseDate(end) : parseDate(undefined, 90);
-                const exams = await withUntis((u) => u.getExamsForRange(from, to));
+                const exams = await withUntis((u) =>
+                    u.getExamsForRange(from, to)
+                );
 
                 const result = exams
                     .map((e) => ({
@@ -167,7 +187,9 @@ export function createMcpServer() {
                         grade: e.grade || undefined
                     }))
                     .sort((a, b) =>
-                        `${a.date} ${a.start}`.localeCompare(`${b.date} ${b.start}`)
+                        `${a.date} ${a.start}`.localeCompare(
+                            `${b.date} ${b.start}`
+                        )
                     );
 
                 return json(result);
@@ -181,7 +203,8 @@ export function createMcpServer() {
         'get_homework',
         {
             title: 'Hausaufgaben abrufen',
-            description: 'Liefert Hausaufgaben aus WebUntis inklusive Fach und Fälligkeitsdatum.',
+            description:
+                'Liefert Hausaufgaben aus WebUntis inklusive Fach und Fälligkeitsdatum.',
             inputSchema: {
                 ...dateRange,
                 end: dateRange.end.describe(
@@ -195,8 +218,12 @@ export function createMcpServer() {
                 const from = parseDate(start);
                 const to = end ? parseDate(end) : parseDate(undefined, 14);
                 // The typings say Homework[], the API actually returns { homeworks, lessons, ... }
-                const raw: any = await withUntis((u) => u.getHomeWorksFor(from, to));
-                const homeworks: any[] = Array.isArray(raw) ? raw : raw?.homeworks ?? [];
+                const raw: any = await withUntis((u) =>
+                    u.getHomeWorksFor(from, to)
+                );
+                const homeworks: any[] = Array.isArray(raw)
+                    ? raw
+                    : (raw?.homeworks ?? []);
                 const lessons: any[] = raw?.lessons ?? [];
                 const subjectByLesson = new Map<number, string>(
                     lessons.map((l) => [l.id, l.subject])
@@ -224,12 +251,15 @@ export function createMcpServer() {
         'get_absences',
         {
             title: 'Fehlstunden abrufen',
-            description: 'Liefert die eigenen Abwesenheiten / Fehlstunden aus WebUntis.',
+            description:
+                'Liefert die eigenen Abwesenheiten / Fehlstunden aus WebUntis.',
             inputSchema: {
                 start: z
                     .string()
                     .optional()
-                    .describe('Startdatum im Format YYYY-MM-DD (Standard: Beginn des Schuljahres)'),
+                    .describe(
+                        'Startdatum im Format YYYY-MM-DD (Standard: Beginn des Schuljahres)'
+                    ),
                 end: z
                     .string()
                     .optional()
@@ -257,19 +287,44 @@ export function createMcpServer() {
         'get_holidays',
         {
             title: 'Ferien & schulfreie Tage abrufen',
-            description: 'Liefert alle in WebUntis eingetragenen Ferien und schulfreien Tage.',
-            inputSchema: {},
+            description:
+                'Liefert Ferien und schulfreie Tage aus WebUntis (Standard: ab heute bis in einem Jahr).',
+            inputSchema: {
+                start: z
+                    .string()
+                    .optional()
+                    .describe(
+                        'Startdatum im Format YYYY-MM-DD (Standard: heute)'
+                    ),
+                end: z
+                    .string()
+                    .optional()
+                    .describe(
+                        'Enddatum im Format YYYY-MM-DD (Standard: heute + 365 Tage)'
+                    )
+            },
             annotations: { readOnlyHint: true }
         },
-        async () => {
+        async ({ start, end }) => {
             try {
+                const fromKey = toKey(parseDate(start));
+                const toKeyValue = toKey(
+                    end ? parseDate(end) : parseDate(undefined, 365)
+                );
                 const holidays = await withUntis((u) => u.getHolidays());
                 return json(
-                    holidays.map((h) => ({
-                        name: h.longName || h.name,
-                        start: formatDate(h.startDate),
-                        end: formatDate(h.endDate)
-                    }))
+                    holidays
+                        .filter(
+                            (h) =>
+                                h.endDate >= fromKey &&
+                                h.startDate <= toKeyValue
+                        )
+                        .sort((a, b) => a.startDate - b.startDate)
+                        .map((h) => ({
+                            name: h.longName || h.name,
+                            start: formatDate(h.startDate),
+                            end: formatDate(h.endDate)
+                        }))
                 );
             } catch (error) {
                 return errorResult(error);
@@ -281,7 +336,8 @@ export function createMcpServer() {
         'get_news',
         {
             title: 'Nachrichten des Tages abrufen',
-            description: 'Liefert die Nachrichten/Mitteilungen aus dem WebUntis News-Widget für einen Tag.',
+            description:
+                'Liefert die Nachrichten/Mitteilungen aus dem WebUntis News-Widget für einen Tag.',
             inputSchema: {
                 date: z
                     .string()
@@ -292,7 +348,9 @@ export function createMcpServer() {
         },
         async ({ date }) => {
             try {
-                const news = await withUntis((u) => u.getNewsWidget(parseDate(date)));
+                const news = await withUntis((u) =>
+                    u.getNewsWidget(parseDate(date))
+                );
                 return json(news);
             } catch (error) {
                 return errorResult(error);
@@ -304,7 +362,8 @@ export function createMcpServer() {
         'get_subjects',
         {
             title: 'Fächer abrufen',
-            description: 'Liefert alle Fächer (Kürzel und Langname) aus WebUntis.',
+            description:
+                'Liefert alle Fächer (Kürzel und Langname) aus WebUntis.',
             inputSchema: {},
             annotations: { readOnlyHint: true }
         },

@@ -1,14 +1,23 @@
 import axios from 'axios';
-import { WebUntis } from 'webuntis';
+import { authenticator } from 'otplib';
+import { WebUntis, WebUntisSecretAuth } from 'webuntis';
 
 type CreateUntisClientOptions = {
     school?: string;
     username?: string;
     password?: string;
+    /** "Schlüssel" from the WebUntis data access QR code (Profil -> Freigaben -> Datenzugriff) */
+    secret?: string;
     url?: string;
 };
 
-type ResolvedSchool = { server: string; loginName: string; displayName: string };
+type Credentials = { username: string; password?: string; secret?: string };
+
+type ResolvedSchool = {
+    server: string;
+    loginName: string;
+    displayName: string;
+};
 
 const SCHOOL_SEARCH_URL = 'https://mobile.webuntis.com/ms/schoolquery2';
 
@@ -24,7 +33,9 @@ function normalizeHost(url: string | undefined) {
 }
 
 /** Looks up the current server + login name of a school via the official WebUntis school search. */
-async function resolveSchool(search: string): Promise<ResolvedSchool | undefined> {
+async function resolveSchool(
+    search: string
+): Promise<ResolvedSchool | undefined> {
     const cached = resolvedSchools.get(search);
     if (cached) return cached;
 
@@ -42,8 +53,9 @@ async function resolveSchool(search: string): Promise<ResolvedSchool | undefined
 
     // Prefer an exact login name match, otherwise only accept an unambiguous result.
     const match =
-        schools.find((s) => s.loginName?.toLowerCase() === search.toLowerCase()) ??
-        (schools.length === 1 ? schools[0] : undefined);
+        schools.find(
+            (s) => s.loginName?.toLowerCase() === search.toLowerCase()
+        ) ?? (schools.length === 1 ? schools[0] : undefined);
 
     if (!match) return undefined;
 
@@ -60,34 +72,89 @@ async function resolveSchool(search: string): Promise<ResolvedSchool | undefined
 function describeError(error: any): string {
     const apiMessage = error?.response?.data?.error?.message;
     if (apiMessage) return `WebUntis: ${apiMessage}`;
-    return error instanceof Error ? error.message : String(error);
+
+    const message = error instanceof Error ? error.message : String(error);
+    // The webuntis lib throws 'Failed to login. {"jsonrpc":...,"error":{"message":"bad credentials"}}'
+    const embedded = message.match(/"message":"([^"]+)"/)?.[1];
+    if (embedded === 'bad credentials') {
+        return 'WebUntis-Login fehlgeschlagen: Benutzername, Passwort oder Schlüssel ist falsch (bad credentials).';
+    }
+    return embedded ? `WebUntis: ${embedded}` : message;
 }
 
 function isInvalidSchool(error: any) {
     return error?.response?.data?.error?.code === -8500;
 }
 
-async function login(school: string, username: string, password: string, host: string) {
-    const untis = new WebUntis(school, username, password, host, undefined, true);
+async function login(
+    school: string,
+    host: string,
+    { username, password, secret }: Credentials
+) {
+    const untis = secret
+        ? new WebUntisSecretAuth(
+              school,
+              username,
+              secret,
+              host,
+              undefined,
+              authenticator as any,
+              true
+          )
+        : new WebUntis(school, username, password, host, undefined, true);
     await untis.login();
     return untis;
 }
 
-export async function createUntisClient({
-    school,
-    username,
-    password,
-    url
-}: CreateUntisClientOptions = {}) {
-    school = (school ?? process.env.WEBUNTIS_SCHOOL)?.trim();
-    username = (username ?? process.env.WEBUNTIS_USERNAME)?.trim();
-    password = password ?? process.env.WEBUNTIS_PASSWORD;
-    let host = normalizeHost(url ?? process.env.WEBUNTIS_URL);
+/** Parses the text of the WebUntis QR code: untis://setschool?url=...&school=...&user=...&key=... */
+function parseQrCode(qr: string | undefined) {
+    if (!qr?.trim()) return undefined;
+    const params = new URL(qr.trim()).searchParams;
+    return {
+        school: params.get('school') ?? undefined,
+        username: params.get('user') ?? undefined,
+        secret: params.get('key') ?? undefined,
+        url: params.get('url') ?? undefined
+    };
+}
+
+export async function createUntisClient(
+    options: CreateUntisClientOptions = {}
+) {
+    const qr = parseQrCode(process.env.WEBUNTIS_QR_CODE);
+
+    let school = (
+        options.school ??
+        qr?.school ??
+        process.env.WEBUNTIS_SCHOOL
+    )?.trim();
+    let host = normalizeHost(
+        options.url ?? qr?.url ?? process.env.WEBUNTIS_URL
+    );
+    const credentials: Credentials = {
+        username: (
+            options.username ??
+            qr?.username ??
+            process.env.WEBUNTIS_USERNAME
+        )?.trim(),
+        password:
+            options.password ??
+            (options.secret ? undefined : process.env.WEBUNTIS_PASSWORD),
+        secret: (
+            options.secret ??
+            qr?.secret ??
+            process.env.WEBUNTIS_SECRET
+        )?.trim()
+    };
+    // An explicit password (e.g. from the URL params) wins over a configured secret.
+    if (options.password) credentials.secret = undefined;
 
     const missing = [
         !school && 'WEBUNTIS_SCHOOL',
-        !username && 'WEBUNTIS_USERNAME',
-        !password && 'WEBUNTIS_PASSWORD'
+        !credentials.username && 'WEBUNTIS_USERNAME',
+        !credentials.password &&
+            !credentials.secret &&
+            'WEBUNTIS_SECRET oder WEBUNTIS_PASSWORD'
     ].filter(Boolean);
     if (missing.length) {
         throw new Error(`Fehlende Umgebungsvariablen: ${missing.join(', ')}`);
@@ -101,7 +168,7 @@ export async function createUntisClient({
 
     if (host) {
         try {
-            return await login(school, username, password, host);
+            return await login(school, host, credentials);
         } catch (error) {
             if (!isInvalidSchool(error)) throw new Error(describeError(error));
             // Fall through: school/server combination is wrong -> try to resolve it.
@@ -125,7 +192,7 @@ export async function createUntisClient({
     }
 
     try {
-        return await login(resolved.loginName, username, password, resolved.server);
+        return await login(resolved.loginName, resolved.server, credentials);
     } catch (error) {
         throw new Error(describeError(error));
     }

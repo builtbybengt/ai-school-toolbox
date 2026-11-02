@@ -28,10 +28,12 @@ Umgebungsvariablen setzen (lokal in `.env`, auf Railway unter *Variables*):
 ```
 WEBUNTIS_SCHOOL=meine-schule
 WEBUNTIS_USERNAME=max.mustermann
-WEBUNTIS_PASSWORD=geheim
-WEBUNTIS_URL=neilo.webuntis.com
+WEBUNTIS_SECRET=<Schlüssel aus dem QR-Code>
+WEBUNTIS_URL=meine-schule.webuntis.com
 MCP_SECRET=<langer-zufallswert>
 ```
+
+Alle Werte findest du in WebUntis unter *Profil → Freigaben → Datenzugriff → Anzeigen* (Schule, Url, Benutzer, Schlüssel). Der Schlüssel funktioniert auch bei Login über Microsoft oder Google. Statt `WEBUNTIS_SECRET` geht auch `WEBUNTIS_PASSWORD` mit dem normalen WebUntis-Passwort.
 
 Schulname und Server findest du in der WebUntis-URL nach dem Login, z. B. `https://meine-schule.webuntis.com/WebUntis/?school=meine-schule`. `WEBUNTIS_URL` ist optional: Fehlt der Server oder passt er nicht zur Schule, wird er automatisch über die WebUntis-Schulsuche ermittelt. Ein Secret erzeugst du mit `openssl rand -hex 32`.
 
@@ -60,8 +62,8 @@ Claude Desktop (`claude_desktop_config.json`):
       "env": {
         "WEBUNTIS_SCHOOL": "meine-schule",
         "WEBUNTIS_USERNAME": "max.mustermann",
-        "WEBUNTIS_PASSWORD": "geheim",
-        "WEBUNTIS_URL": "neilo.webuntis.com"
+        "WEBUNTIS_SECRET": "<Schlüssel aus dem QR-Code>",
+        "WEBUNTIS_URL": "meine-schule.webuntis.com"
       }
     }
   }
